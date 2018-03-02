@@ -407,17 +407,18 @@ class ImageService{
     /**
      * get image type and create image to each each image type
      * @param String Source Image path and name
-     */
+     *//*
     private function set_image($src, $img_info){
         
         $image = new Image();
+        $image->init();
         $image->width   = $img_info[0]; 
         $image->height  = $img_info[1]; 
         $image->format  = $img_info[2]; 
         $image->bits  = $img_info['bits']; 
         $image->channels  = $img_info['channels']; 
         $image->mime  = $img_info['mime']; 
-        $image->name  = basename($src);
+        $image->setName($src)  = basename();
 
 
         switch($img_info[2]){ 
@@ -431,14 +432,14 @@ class ImageService{
         
         return $image;
     }
-    
+    */
     
         /**
      * get image type and create image to each each image type
      * @param String Source Image path and name
      */
     public function create_image($src){
-        return $this->set_image($src, getImageSize($src)); 
+        return new Image($src);
     }
      /**
      * get image type and create image to each each image type

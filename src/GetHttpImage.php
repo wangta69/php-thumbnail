@@ -16,6 +16,10 @@ class GetHttpImage{
     private $src_img    = null;//sorceimg  [width] => 288 [height] => 512 [format] => 2 [bits] => 8 [channels] => 3 [mime] => image/jpeg  [resource ] => Resource id #22
     private $dest_img   = null;
     
+    private $FORMAT = array('gif'=>1, 'jpg'=>2, 'jpeg'=>2, 'png'=>3, 'bmp'=>6, 'wbmp'=>15);
+    
+           
+            
     public function __construct() {
         $this->imgSvc = new ImageService();
     }
@@ -27,6 +31,7 @@ class GetHttpImage{
      */
     public function read($httpUrl){
         $this->src_img = $this->imgSvc->create_image($httpUrl);//
+        print_r($this->src_img);
         return $this;
     }
     
@@ -108,9 +113,16 @@ class GetHttpImage{
         
     }
 
+
+    public function format($format){
+        $this->dest_img->format = $this->FORMAT[strtolower($format)];
+        $this->dest_img->extension = strtolower($format);
+        return $this;
+    }
     
-    public function form($form){
-        echo "save start..";
+    public function name($name){
+        $this->dest_img->name = strtolower($name);
+        return $this;
     }
     
     public function save($path){
@@ -120,15 +132,15 @@ class GetHttpImage{
        if($this->dest_img != null){
             $resource = $this->dest_img->resource;
             $format = $this->dest_img->format;
-            $name   = $this->dest_img->name;
+            $filename   = $this->dest_img->get_filename();
        }else{
             $resource = $this->src_img->resource;
             $format = $this->src_img->format;
-            $name   = $this->src_img->name;
+            $filename   = $this->src_img->get_filename();
        }
     
        
-       $file = $path."/".$name;
+       $file = $path."/".$filename;
        
         switch($format){ 
             case (1): 
