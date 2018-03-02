@@ -5,6 +5,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 use Response;
+use Pondol\Image\Image;
+use Pondol\Files\File;
 
 class ImageService{ 
     public $imagepad    = array("x"=>20, "y"=>20);
@@ -19,7 +21,7 @@ class ImageService{
      */
     public function impressWaterMark($params) {
 
-        $src    = $this->get_image_info($params["src"]);
+        $src    = $this->create_image($params["src"]);
 
         $src_x = imagesx($src["image"]); 
         $src_y = imagesy($src["image"]); 
@@ -103,8 +105,8 @@ class ImageService{
         
     //  print_r($params);
         //exit;
-        $src    = $this->get_image_info($params["src"]);
-        $logo   = $this->get_image_info($params["logo"]);
+        $src    = $this->create_image($params["src"]);
+        $logo   = $this->create_image($params["logo"]);
 
         # get expected position of logo
         $position_x = ($src["width"] - $logo["width"]) / 2;  
@@ -138,7 +140,7 @@ class ImageService{
         $params["max_height"]   = isset($params["max_height"]) ? $params["max_height"]: 100;
         //$params["resize"]     = isset($params["resize"])?$params["resize"]:false;
         
-        $src            = $this->get_image_info($params["sourcefile"]);
+        $src            = $this->create_image($params["sourcefile"]);
         
 
         ## max_width or max_height zero means as big as original image's width or hegith size
@@ -225,7 +227,7 @@ class ImageService{
      */
     public function cropcenter($params){
         
-        $src    = $this->get_image_info($params["sourcefile"]);
+        $src    = $this->create_image($params["sourcefile"]);
         $params["resize"]   = isset($params["resize"]) ? $params["resize"]:false;
         
         //if params["resize"] is true,  crop image after resizing source image
@@ -259,7 +261,8 @@ class ImageService{
      
         $bgc = imagecolorallocate($dst_img, 255, 255, 255); 
         imagefilledrectangle($dst_img, 0, 0, $dst_width, $dst_height, $bgc);  
-            
+        
+        //bool imagecopyresampled ( resource $dst_image , resource $src_image , int $dst_x , int $dst_y , int $src_x , int $src_y , int $dst_w , int $dst_h , int $src_w , int $src_h )
         imagecopyresampled($dst_img, $src["image"], 0, 0, $sc_x, $sc_y, $dst_width, $dst_height, $dst_width, $dst_height);   
         imagepng($dst_img, $params["desc"]); 
 
@@ -269,13 +272,13 @@ class ImageService{
     }  
 
     /**
-     * 이미지를 최적화 시킨후 리사이징 한다.
+     * Crop Images From Center After resizing
      * @param $params
      * $params = array("width"=>"crop width", "height"=>"coop height", "sourcefile"=>"source filepath/filenmae", "desc"=>"desc filepath/filenmae"
      */
     public function resizeCropCenter($params){
         
-        $src    = $this->get_image_info($params["sourcefile"]);
+        $src    = $this->create_image($params["sourcefile"]);
         $ratio_w    = $params["width"]/ $src["width"];
         $ratio_h    = $params["height"]/ $src["height"];
 
@@ -321,7 +324,7 @@ class ImageService{
      */ 
     public function convertformat($params){      
 
-        $src = $this->get_image_info($params["src"]);
+        $src = $this->create_image($params["src"]);
  
         if($src["format"] == 1)  
         { 
@@ -365,7 +368,7 @@ class ImageService{
 
 
     /** 
-     * @param array $params Infomation of source image
+     * @param Array $params Infomation of source image
      * $param = array(path=>"/path/", filename=>"filename", width=>"thnumnail width", height=>"thumbnail height", default=>"/path/default_filename");
      * getthumbimg method check if thumb image is, if it exists return images else create thumbimage 
      * 
@@ -379,8 +382,8 @@ class ImageService{
             if(!is_file($thumfullpath)){
                 $thumfilename   = $params["filename"].".thumb"; 
             //Create File Save Path : Modify this part depend on your program 
-                $this->mkfolder($params["path"]."thumb"); 
-                $this->mkfolder($params["path"]."thumb/".$params["width"]."_".$params["height"]); 
+                File::mkfolder($params["path"]."thumb"); 
+                File::mkfolder($params["path"]."thumb/".$params["width"]."_".$params["height"]); 
                 
                 //전체 이미지를 유지한채 축소
                 //$args = array("sourcefile"=>$source, "savepath"=>$thumfullpath, "max_width"=>$params["width"], "max_height"=>$params["height"]);
@@ -400,40 +403,50 @@ class ImageService{
         } 
     } 
 
-    /**
-     * Create folder
-     * @return boolean true (folder exists or creating folder is success)
-     */
-    private function mkfolder($path){## 폴더 생성
-        if(!is_dir($path)){
-            $result = @mkdir($path, 0755);
-            if(!$result) return false;
-            else return true;
-        }else return true;
-    }
     
     /**
      * get image type and create image to each each image type
      * @param String Source Image path and name
      */
-    private function get_image_info($src){
-
-        $img_info       = getImageSize($src);//[0] width, [1] height, [2] type, [3] attr 
-        $rtn["width"]   = $img_info[0]; 
-        $rtn["height"]  = $img_info[1]; 
-        $rtn["format"]  = $img_info[2]; 
+    private function set_image($src, $img_info){
         
+        $image = new Image();
+        $image->width   = $img_info[0]; 
+        $image->height  = $img_info[1]; 
+        $image->format  = $img_info[2]; 
+        $image->bits  = $img_info['bits']; 
+        $image->channels  = $img_info['channels']; 
+        $image->mime  = $img_info['mime']; 
+        $image->name  = basename($src);
+
+
         switch($img_info[2]){ 
-            case (1):$rtn["image"]  = ImageCreateFromGif($src);break; 
-            case (2):$rtn["image"]  = ImageCreateFromJPEG($src);break; 
-            case (3):$rtn["image"]  = ImageCreateFromPNG($src);break; 
-            case (6):$rtn["image"]  = imagecreatefrombmp($src);break; 
-            case (15):$rtn["image"] = imagecreatefromwbmp($src);break; 
-            default:$rtn["image"]   = false;break; 
+            case (1):$image->resource  = ImageCreateFromGif($src);break; 
+            case (2):$image->resource  = ImageCreateFromJPEG($src);break; 
+            case (3):$image->resource  = ImageCreateFromPNG($src);break; 
+            case (6):$image->resource  = imagecreatefrombmp($src);break; 
+            case (15):$image->resource = imagecreatefromwbmp($src);break; 
+            default:$image->resource   = false;break; 
         } 
         
-        return $rtn;
+        return $image;
     }
+    
+    
+        /**
+     * get image type and create image to each each image type
+     * @param String Source Image path and name
+     */
+    public function create_image($src){
+        return $this->set_image($src, getImageSize($src)); 
+    }
+     /**
+     * get image type and create image to each each image type
+     * @param String Source Image path and name
+     */
+    //public function create_image_from_steam($data){
+    //    return $this->set_image($src, getimagesizefromstring($src)); 
+   // }
 } 
 
 
