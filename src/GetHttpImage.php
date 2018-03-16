@@ -16,10 +16,17 @@ class GetHttpImage{
     private $src_img    = null;//sorceimg  [width] => 288 [height] => 512 [format] => 2 [bits] => 8 [channels] => 3 [mime] => image/jpeg  [resource ] => Resource id #22
     private $dest_img   = null;
     
-    private $FORMAT = array('gif'=>1, 'jpg'=>2, 'jpeg'=>2, 'png'=>3, 'bmp'=>6, 'wbmp'=>15);
+    private $FORMAT = ['gif'=>1, 'jpg'=>2, 'jpeg'=>2, 'png'=>3, 'bmp'=>6, 'wbmp'=>15];
     
-           
-            
+    # bool imagefilledrectangle ( resource $image , int $x1 , int $y1 , int $x2 , int $y2 , int $color )
+    # $image : imagecreatetruecolor() 등의 이미지 생성 함수에서 반환한 이미지 자원., 
+    private $filled = ['x1'=>0, 'y1'=>0, 'x2'=>0, 'y2'=>0];
+    
+    # bool imagecopyresampled ( resource $dst_image , resource $src_image , int $dst_x , int $dst_y , int $src_x , int $src_y , int $dst_w , int $dst_h , int $src_w , int $src_h )
+    # dst_image: 목표이미지, src_image: 원본이미지, dst_x: 목표이미지의 x 시작점, 목표이미지의 y 시작점, src_x: 소스이미지의 x시작점, src_y 소스이미지의 y 시작점, dst_w
+    private $resampled = ['dst_x'=>0, 'dst_y'=>0, 'src_x'=>0, 'src_y'=>0, 'dst_w'=>0, 'dst_h'=>0, 'src_w'=>0, 'src_h'=>0];
+
+        
     public function __construct() {
         $this->imgSvc = new ImageService();
     }
@@ -37,7 +44,7 @@ class GetHttpImage{
     /**
      * blank image create
      */
-    public function create($width = 100, $height = 100){
+    public function set_size($width = 100, $height = 100){
         $this->dest_img = new Image();//$this->src_img;
         
         $this->dest_img->name = $this->src_img->name;
@@ -63,53 +70,105 @@ class GetHttpImage{
     }
     
     
+     /**
+     * 원본의 가로 세로 비율을 유지한체로 이미지  copy center
+     */
+      
+          /**
+     * 이미지를 최적화 시킨후 중심부로부터 crop 한다.
+     * @param $params
+     * $params = array("width"=>"crop width", "height"=>"coop height", "sourcefile"=>"source filepath/filenmae", "desc"=>"desc filepath/filenmae"
+     */
+    public function copyimage(){
+        
+        $ratio_w    = $this->dest_img->width / $this->src_img->width;
+        $ratio_h    = $this->dest_img->height / $this->src_img->height;
+
+        if($ratio_h > $ratio_w) {
+            $src_w = ($this->src_img->height*$this->dest_img->width)/$this->dest_img->height; 
+            $src_h = $this->src_img->height; 
+            $src_y = 0;  
+            $src_x = ceil(($this->src_img->width - $src_h)/2); 
+        }else{
+            $src_w      = $this->src_img->width; 
+            $src_h      = ($this->src_img->width*$this->dest_img->height)/$this->dest_img->width; 
+            $src_x = 0;  
+            $src_y      = ceil(($this->src_img->height-$src_h)/2); 
+        }   
+        
+        $this->filled['x1'] = 0;
+        $this->filled['y1'] = 0;
+        $this->filled['x2'] = $this->dest_img->width;
+        $this->filled['y2'] = $this->dest_img->height;
+        
+        $this->resampled['dst_x']= 0; 
+        $this->resampled['dst_y']= 0;
+        $this->resampled['src_x']= $src_x;
+        $this->resampled['src_y']= $src_y;
+        $this->resampled['dst_w']= $this->dest_img->width;
+        $this->resampled['dst_h']= $this->dest_img->height;
+        $this->resampled['src_w']= $src_w;
+        $this->resampled['src_h']= $src_h;
+
+         return $this->create_image();
+    }  
+
+    
     /**
      * 원본의 가로 세로 비율을 유지한체로 이미지  copy center
      */
     public function copyWithRatio(){
-        $dst_width = 0;
-        $dst_height = 0;
+        $dst_w = 0;
+        $dst_h = 0;
         
         if($this->src_img->width > $this->dest_img->width || $this->src_img->height > $this->dest_img->height){
-            //$largetThanThum = true; 
-            
-            
+
             if($this->src_img->width == $this->src_img->height) 
             { 
-                $dst_width  = $this->dest_img->width; 
-                $dst_height = $this->dest_img->height; 
+                $dst_w  = $this->dest_img->width; 
+                $dst_h = $this->dest_img->height; 
             }elseif($this->src_img->width > $this->src_img->height){ 
-                $dst_width  = $this->dest_img->width; 
-                $dst_height = ceil(($this->dest_img->width / $this->src_img->width) * $this->src_img->height); 
+                $dst_w  = $this->dest_img->width; 
+                $dst_h = ceil(($this->dest_img->width / $this->src_img->width) * $this->src_img->height); 
             }else{ 
-                $dst_height = $this->dest_img->height; 
-                $dst_width  = ceil(($this->dest_img->height / $this->src_img->height) * $this->src_img->width); 
+                $dst_h = $this->dest_img->height; 
+                $dst_w  = ceil(($this->dest_img->height / $this->src_img->height) * $this->src_img->width); 
             } 
         }else{ 
-            $dst_width  = $this->src_img->width; 
-            $dst_height = $this->src_img->height; 
+            $dst_w  = $this->src_img->width; 
+            $dst_h = $this->src_img->height; 
         } 
         
         
+
+        $this->filled['x1'] = 0;
+        $this->filled['y1'] = 0;
+        $this->filled['x2'] = $this->dest_img->width;
+        $this->filled['y2'] = $this->dest_img->height;
         
-        $dst_x = $dst_width < $this->dest_img->width ? ceil(($this->dest_img->width - $dst_width)/2) : 0; 
-        $dst_y = $dst_height < $this->dest_img->height ? ceil(($this->dest_img->height - $dst_height)/2) : 0;
+        $this->resampled['dst_x']= $dst_w < $this->dest_img->width ? ceil(($this->dest_img->width - $dst_w)/2) : 0; 
+        $this->resampled['dst_y']= $dst_h < $this->dest_img->height ? ceil(($this->dest_img->height - $dst_h)/2) : 0;
+        $this->resampled['src_x']= 0;
+        $this->resampled['src_y']= 0;
+        $this->resampled['dst_w']= $dst_w;
+        $this->resampled['dst_h']= $dst_h;
+        $this->resampled['src_w']= imagesx($this->src_img->resource);
+        $this->resampled['src_h']= imagesy($this->src_img->resource);
+
+         return $this->create_image();
         
-        
+    }
+
+    private function create_image(){
+
         $bgc = imagecolorallocate($this->dest_img->resource, 255, 255, 255); 
         
         ##
-        imagefilledrectangle($this->dest_img->resource, 0, 0, $this->dest_img->width, $this->dest_img->height, $bgc); 
-        
-        ## bool imagecopyresampled ( resource $dst_image , resource $src_image , int $dst_x , int $dst_y , int $src_x , int $src_y , int $dst_w , int $dst_h , int $src_w , int $src_h )
-        //imagecopyresampled($this->dest_img->resource, $this->src_img->resource, $dst_x, $dst_y, 0, 0, $dst_width, $dst_height, imagesx($src["image"]),imagesy($src["image"]));  
-        //원본의 비율을 유지하는 상태이므로 상기에서 계산된 $dst_width, $dst_height 을 사용한다.
-        
-        imagecopyresampled($this->dest_img->resource, $this->src_img->resource, $dst_x, $dst_y, 0, 0, $dst_width, $dst_height, imagesx($this->src_img->resource),imagesy($this->src_img->resource));  
-        
+        imagefilledrectangle($this->dest_img->resource, $this->filled['x1'], $this->filled['y1'], $this->filled['x2'], $this->filled['y2'], $bgc); 
+        ##
+        imagecopyresampled($this->dest_img->resource, $this->src_img->resource, $this->resampled['dst_x'], $this->resampled['dst_y'], $this->resampled['src_x'], $this->resampled['src_y'], $this->resampled['dst_w'], $this->resampled['dst_h'], $this->resampled['src_w'],$this->resampled['src_h']);  
         
          return $this;
-        
     }
 
 

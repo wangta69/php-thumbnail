@@ -72,7 +72,6 @@ class ImageService{
 
         imagecopyresampled($dst_im, $src["image"],0, 0, 0, 0, $dst_x, $dst_y, $src_x, $src_y); 
 
-
         switch($src["format"]){ 
             case 1: #gif  
                 if($params["savepath"]) @imagegif($dst_im, $params["savepath"]);  
@@ -397,7 +396,7 @@ class ImageService{
     } 
 
     
-        /**
+    /**
      * get image type and create image to each each image type
      * @param String Source Image path and name
      */
