@@ -102,9 +102,6 @@ class ImageService{
      */ 
     public function imageWaterMaking($params){ ## 
         ##  
-        
-    //  print_r($params);
-        //exit;
         $src    = $this->create_image($params["src"]);
         $logo   = $this->create_image($params["logo"]);
 
@@ -213,10 +210,6 @@ class ImageService{
         } 
         ImageDestroy($dst_img); 
         ImageDestroy($src["image"]); 
-        
-        //print_r($params);
-        //exit;
-        //return $save_filename; 
     }
      
     /**
@@ -404,36 +397,6 @@ class ImageService{
     } 
 
     
-    /**
-     * get image type and create image to each each image type
-     * @param String Source Image path and name
-     *//*
-    private function set_image($src, $img_info){
-        
-        $image = new Image();
-        $image->init();
-        $image->width   = $img_info[0]; 
-        $image->height  = $img_info[1]; 
-        $image->format  = $img_info[2]; 
-        $image->bits  = $img_info['bits']; 
-        $image->channels  = $img_info['channels']; 
-        $image->mime  = $img_info['mime']; 
-        $image->setName($src)  = basename();
-
-
-        switch($img_info[2]){ 
-            case (1):$image->resource  = ImageCreateFromGif($src);break; 
-            case (2):$image->resource  = ImageCreateFromJPEG($src);break; 
-            case (3):$image->resource  = ImageCreateFromPNG($src);break; 
-            case (6):$image->resource  = imagecreatefrombmp($src);break; 
-            case (15):$image->resource = imagecreatefromwbmp($src);break; 
-            default:$image->resource   = false;break; 
-        } 
-        
-        return $image;
-    }
-    */
-    
         /**
      * get image type and create image to each each image type
      * @param String Source Image path and name
@@ -441,13 +404,6 @@ class ImageService{
     public function create_image($src){
         return new Image($src);
     }
-     /**
-     * get image type and create image to each each image type
-     * @param String Source Image path and name
-     */
-    //public function create_image_from_steam($data){
-    //    return $this->set_image($src, getimagesizefromstring($src)); 
-   // }
 } 
 
 

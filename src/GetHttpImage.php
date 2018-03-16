@@ -31,7 +31,6 @@ class GetHttpImage{
      */
     public function read($httpUrl){
         $this->src_img = $this->imgSvc->create_image($httpUrl);//
-        print_r($this->src_img);
         return $this;
     }
     
@@ -129,18 +128,13 @@ class GetHttpImage{
        //first create 
        File::mkfolders($path);
        
-       if($this->dest_img != null){
-            $resource = $this->dest_img->resource;
-            $format = $this->dest_img->format;
-            $filename   = $this->dest_img->get_filename();
-       }else{
-            $resource = $this->src_img->resource;
-            $format = $this->src_img->format;
-            $filename   = $this->src_img->get_filename();
-       }
-    
+       if($this->dest_img == null)
+            $this->dest_img = $this->src_img;
        
-       $file = $path."/".$filename;
+        $resource = $this->dest_img->resource;
+        $format = $this->dest_img->format;
+        $filename   = $this->dest_img->get_filename();
+        $file = $path."/".$filename;
        
         switch($format){ 
             case (1): 
@@ -164,6 +158,10 @@ class GetHttpImage{
         
         if($this->dest_img != null) ImageDestroy($this->dest_img->resource); 
         ImageDestroy($this->src_img->resource); 
+        
+    }
+
+    public function get_saved_path(){
         
     }
     
