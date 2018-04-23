@@ -60,6 +60,8 @@ class Image{
     
     public function get_filename()
     {
+        echo "get_filename";
+        print_r($this);
         return $this->name.".".$this->extension;
     }
 } 

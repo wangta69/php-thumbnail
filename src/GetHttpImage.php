@@ -38,6 +38,13 @@ class GetHttpImage{
      */
     public function read($httpUrl){
         $this->src_img = $this->imgSvc->create_image($httpUrl);//
+        
+        $this->dest_img = new Image();//$this->src_img;
+        $this->dest_img->name = $this->src_img->name;
+        $this->dest_img->format = $this->src_img->format;
+        $this->dest_img->extension = $this->src_img->extension;
+        $this->dest_img->height = $this->src_img->height;
+        $this->dest_img->width = $this->src_img->width;
         return $this;
     }
     
@@ -45,10 +52,9 @@ class GetHttpImage{
      * blank image create
      */
     public function set_size($width = 100, $height = 100){
-        $this->dest_img = new Image();//$this->src_img;
+       //$this->dest_img = new Image();//$this->src_img;
         
-        $this->dest_img->name = $this->src_img->name;
-        $this->dest_img->format = $this->src_img->format;
+        
         
         if($width == 0  && $this->src_img->height > $height )
             $width = ceil(($height * $this->src_img->width) / $this->src_img->height); 

@@ -13,6 +13,8 @@ composer require "wangta69/php-thumbnail @dev"
 use Pondol\Image\GetHttpImage;
 $img_url = 'http://www.shop-wiz.com/myphoto.jpg';
 $save_path = '/home/photos';
+
+$image = new GetHttpImage();
 $image->read($img_url)->save($save_path);
 ```
 #### read(source image url)
