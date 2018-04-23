@@ -33,10 +33,9 @@ class Image{
         $this->height  = $img_info[1]; 
         $this->format  = $img_info[2]; 
         $this->bits  = $img_info['bits']; 
-        $this->channels  = $img_info['channels']; 
+        $this->channels  = isset($img_info['channels']) ? $img_info['channels'] : null; 
         $this->mime  = $img_info['mime']; 
         $this->setName($src);
-
 
         switch($img_info[2]){ 
             case (1):$this->resource  = ImageCreateFromGif($src);break; 
@@ -53,8 +52,10 @@ class Image{
     private function setName($src){
         $file_name          = basename($src);
         $explode            = explode(".",$file_name);
+        
+        
         $this->name         = $explode[0];
-        $this->extension    = $explode[1];
+        $this->extension    = isset($explode[1]) ? $explode[1] : null;
     }
     
     public function get_filename()
