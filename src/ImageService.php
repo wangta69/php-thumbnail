@@ -401,6 +401,7 @@ class ImageService{
      * @param String Source Image path and name
      */
     public function create_image($src){
+        
         return new Image($src);
     }
 } 

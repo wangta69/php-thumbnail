@@ -53,9 +53,7 @@ class GetHttpImage{
      */
     public function set_size($width = 100, $height = 100){
        //$this->dest_img = new Image();//$this->src_img;
-        
-        
-        
+
         if($width == 0  && $this->src_img->height > $height )
             $width = ceil(($height * $this->src_img->width) / $this->src_img->height); 
         else if($height == 0  && $this->src_img->width > $width)
@@ -192,7 +190,6 @@ class GetHttpImage{
     public function save($path){
        //first create 
        File::mkfolders($path);
-       
        if($this->dest_img == null)
             $this->dest_img = $this->src_img;
        
