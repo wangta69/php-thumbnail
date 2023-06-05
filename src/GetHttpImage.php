@@ -51,14 +51,18 @@ class GetHttpImage{
     /**
      * blank image create
      */
-    public function set_size($width = 100, $height = 100){
+    public function set_size($width = 0, $height = 0){
        //$this->dest_img = new Image();//$this->src_img;
 
-        if($width == 0  && $this->src_img->height > $height )
-            $width = ceil(($height * $this->src_img->width) / $this->src_img->height); 
-        else if($height == 0  && $this->src_img->width > $width)
-            $height = ceil(($width * $this->src_img->height) / $this->src_img->width); 
-        
+        // if($width == 0  && $this->src_img->height > $height )
+        //     $width = ceil(($height * $this->src_img->width) / $this->src_img->height); 
+        // else if($height == 0  && $this->src_img->width > $width)
+        //     $height = ceil(($width * $this->src_img->height) / $this->src_img->width); 
+        if (!$width) { // height 기준으로 width 를 설정
+            $width = ($height * $this->src_img->width) / $this->src_img->height;
+        } else if (!$height) { // width 기준으로 height 를 설정
+            $height = ($width * $this->src_img->width) / $this->src_img->height;
+        }
         
         $this->dest_img->width = $width;
         $this->dest_img->height = $height;
