@@ -52,31 +52,50 @@ class GetHttpImage{
      * blank image create
      */
     public function set_size($width = 0, $height = 0){
-       //$this->dest_img = new Image();//$this->src_img;
+        //$this->dest_img = new Image();//$this->src_img;
+ 
+         if($width == 0  && $this->src_img->height > $height )
+             $width = ceil(($height * $this->src_img->width) / $this->src_img->height); 
+         else if($height == 0  && $this->src_img->width > $width)
+             $height = ceil(($width * $this->src_img->height) / $this->src_img->width); 
+         
+         
+         $this->dest_img->width = $width;
+         $this->dest_img->height = $height;
+         
+          if($this->src_img->format == 1)  
+         { 
+             $this->dest_img->resource    = imagecreate($width, $height); 
+         }else{ 
+             $this->dest_img->resource    = imagecreatetruecolor($width, $height); 
+         } 
+         
+         return $this;
+     }
 
-        // if($width == 0  && $this->src_img->height > $height )
-        //     $width = ceil(($height * $this->src_img->width) / $this->src_img->height); 
-        // else if($height == 0  && $this->src_img->width > $width)
-        //     $height = ceil(($width * $this->src_img->height) / $this->src_img->width); 
-        if (!$width) { // height 기준으로 width 를 설정
-            $width = ($height * $this->src_img->width) / $this->src_img->height;
-        } else if (!$height) { // width 기준으로 height 를 설정
-            $height = ($width * $this->src_img->width) / $this->src_img->height;
-        }
-        
-        $this->dest_img->width = $width;
-        $this->dest_img->height = $height;
-        
-         if($this->src_img->format == 1)  
-        { 
-            $this->dest_img->resource    = imagecreate($width, $height); 
-        }else{ 
-            $this->dest_img->resource    = imagecreatetruecolor($width, $height); 
-        } 
-        
-        return $this;
-    }
-    
+    /**
+     * blank image create
+     */
+    public function resize($width = 0, $height = 0){
+        //$this->dest_img = new Image();//$this->src_img;
+        if($width == 0 )
+            $width = ceil(($height * $this->src_img->width) / $this->src_img->height); 
+        else if($height == 0)
+            $height = ceil(($width * $this->src_img->height) / $this->src_img->width); 
+         
+         
+         $this->dest_img->width = $width;
+         $this->dest_img->height = $height;
+
+          if($this->src_img->format == 1)  
+         { 
+             $this->dest_img->resource    = imagecreate($width, $height); 
+         }else{ 
+             $this->dest_img->resource    = imagecreatetruecolor($width, $height); 
+         } 
+         
+         return $this;
+     }
     
      /**
      * 원본의 가로 세로 비율을 유지한체로 이미지  copy center
@@ -122,6 +141,19 @@ class GetHttpImage{
     }  
 
     
+    public function copyimage2(){
+        $this->resampled['dst_x']= 0; 
+        $this->resampled['dst_y']= 0;
+        $this->resampled['src_x']= 0;
+        $this->resampled['src_y']= 0;
+        $this->resampled['dst_w']= $this->dest_img->width;
+        $this->resampled['dst_h']= $this->dest_img->height;
+        $this->resampled['src_w']= $this->src_img->width;
+        $this->resampled['src_h']= $this->src_img->height;
+
+         return $this->create_image();
+    } 
+
     /**
      * 원본의 가로 세로 비율을 유지한체로 이미지  copy center
      */
